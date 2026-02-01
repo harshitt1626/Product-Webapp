@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>API Pagination</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+  font-family: Arial;
+  padding: 20px;
+}
+
+#products {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.card {
+  border: 1px solid #ccc;
+  padding: 10px;
+  
+}
+
+.card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+#pagination {
+  margin-top: 20px;
+}
+
+#pagination button {
+  padding: 6px 12px;
+  margin: 4px;
+  cursor: pointer;
+}
+
+.active {
+  background: black;
+  color: white;
+}
+  </style>
+</head>
+<body>
+
+  <h1>Products</h1>
+
+  <div id="products"></div>
+
+  <div id="pagination"></div>
+
+  <script>
+    class ProductApp {
+  constructor() {
+    this.api = "https://dummyjson.com/products";
+    this.limit = 6;
+    this.skip = 0;
+    this.currentPage = 1;
+
+    this.productsDiv = document.getElementById("products");
+    this.paginationDiv = document.getElementById("pagination");
+
+    this.loadProducts();
+  }
+
+  // 🔹 API CALL (PROMISE)
+  fetchProducts() {
+    return fetch(`${this.api}?limit=${this.limit}&skip=${this.skip}`)
+      .then(res => res.json());
+  }
+
+  // 🔹 LOAD DATA
+  loadProducts() {
+    this.fetchProducts()
+      .then(data =>{
+        this.total = data.total;
+        this.renderProducts(data.products);
+        this.renderPagination();
+      })
+      .catch(err => console.log(err));
+  }
+
+  // 🔹 SHOW PRODUCTS
+  renderProducts(products) {
+    this.productsDiv.innerHTML = "";
+
+    products.forEach(p => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <img src="${p.thumbnail}">
+        <h3>${p.title}</h3>
+        <p>₹ ${p.price}</p>
+        <p>⭐ ${p.rating}</p>
+      `;
+      this.productsDiv.appendChild(div);
+    });
+  }
+
+  // 🔹 PAGINATION BUTTONS
+  renderPagination() {
+    this.paginationDiv.innerHTML = "";
+
+    const totalPages = Math.ceil(this.total / this.limit);
+
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.innerText = i;
+
+      if (i === this.currentPage) {
+        btn.classList.add("active");
+      }
+
+      btn.addEventListener("click", () => {
+        this.currentPage = i;
+        this.skip = (i - 1) * this.limit;
+        this.loadProducts();
+      });
+
+      this.paginationDiv.appendChild(btn);
+    }
+  }
+}
+
+// 🔹 START APP
+new ProductApp();
+
+  </script>
+</body>
+</html>
+
